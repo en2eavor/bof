@@ -134,9 +134,17 @@ pip install pwntools
 
 ### Running the Exploits
 
-#### Demo 1: Stdin Injection (Multi-byte write trick)
+#### Main Solution: Complete Exploitation Chain
 ```bash
 chmod +x chall_patched
+python3 pwn_solution.py demo    # Stdin injection demo
+python3 pwn_solution.py got     # GOT overwrite demo
+python3 pwn_solution.py full    # Full explanation
+python3 pwn_solution.py all     # Run all demos
+```
+
+#### Demo 1: Stdin Injection (Multi-byte write trick)
+```bash
 python3 exploit_stdin.py stdin
 ```
 
@@ -154,8 +162,9 @@ python3 exploit.py advanced
 ### Files in this Repository
 
 - `chall_patched` - The vulnerable binary
-- `exploit_stdin.py` - **Main solution** demonstrating stdin injection
-- `exploit.py` - General exploitation framework
+- `pwn_solution.py` - **Complete solution** with full exploitation chain
+- `exploit_stdin.py` - Stdin injection demonstration
+- `exploit.py` - General exploitation framework  
 - `solution.py` - Detailed solution with multiple strategies
 - `requirements.txt` - Python dependencies
 - `README.md` - This file
@@ -183,6 +192,48 @@ To prevent this type of vulnerability:
 - [Arbitrary Write Vulnerabilities](https://ctf101.org/binary-exploitation/arbitrary-write/)
 - [Pwntools Documentation](https://docs.pwntools.com/)
 - [Binary Exploitation Techniques](https://github.com/nnamon/linux-exploitation-course)
+- [/proc filesystem documentation](https://man7.org/linux/man-pages/man5/proc.5.html)
+
+## Quick Reference
+
+### Key Special Files
+```
+/proc/self/mem     - Process memory (read/write)
+/proc/self/maps    - Memory mappings (read-only)
+/proc/self/fd/0    - stdin (read/write)
+/proc/self/fd/1    - stdout (write)
+/proc/self/fd/2    - stderr (write)
+```
+
+### Exploitation Workflow
+```
+1. Reconnaissance
+   - objdump -d chall_patched | grep "<main>:"
+   - readelf -s chall_patched | grep FUNC
+   - checksec chall_patched
+
+2. Find Target Address
+   - GOT entries: readelf -r chall_patched
+   - Stack addresses: gdb + break point
+   - Return addresses: analyze call stack
+
+3. Write Payload
+   - Filename: /proc/self/mem
+   - Offset: target_address (e.g., 0x404000)
+   - Data: byte_value (0x00-0xFF)
+   - Repeat 8 times for full address
+
+4. Trigger Execution
+   - Call the overwritten function
+   - Get shell/flag
+```
+
+### Common GOT Targets
+```
+puts@GOT    - Often used at end of program
+printf@GOT  - Frequently called, good target
+fgets@GOT   - Called early, can hijack flow
+```
 
 ## License
 
