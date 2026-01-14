@@ -14,9 +14,9 @@ By writing to /proc/self/mem, we can:
 3. Patch code in memory to execute shellcode
 """
 
-from pwn import *
 import os
 import struct
+from pwn import *
 
 # Binary configuration
 BINARY = './chall_patched'
