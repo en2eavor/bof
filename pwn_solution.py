@@ -11,8 +11,8 @@ This script demonstrates the full exploitation chain:
 This is the final working exploit for the challenge.
 """
 
-from pwn import *
 import sys
+from pwn import *
 
 # Configuration
 BINARY = './chall_patched'
